@@ -183,4 +183,9 @@ addEventListener('DOMContentLoaded', () => {
       window.scroll({ top: offsetBegin + scrollPix - window.innerHeight / 2 + pixPerLine / 2 });
     };
   })();
+
+  onerror = (e) => {
+    // Catch uncaught error to prevent interruption
+    console.error('onerror: ', e);
+  };
 });
