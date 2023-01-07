@@ -39,10 +39,15 @@ async function handleReq(req: Request): Promise<Response> {
   if (upgrade.toLowerCase() != 'websocket') {
     try {
       const url = new URL(req.url);
-      const pathname = url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\//, '');
-      const filepath = new URL(pathname, Deno.mainModule);
-      const file = await Deno.open(filepath);
-      return new Response(file.readable);
+      const pathname = url.pathname === '/' ? 'index.html' : url.pathname;
+      const filepath = new URL(pathname.replace(/^\//, ''), Deno.mainModule);
+      const file = await Deno.open(filepath)
+        // In case request to `base` directory(i.e. images in markdown)
+        .catch(() => Deno.open(pathname));
+      const fileInfo = await file.stat();
+      return fileInfo.isFile
+        ? new Response(file.readable)
+        : new Response('Not a file', { status: 404 });
     } catch (e) {
       return new Response(e.message, { status: 500 });
     }
